@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto AI Price Prediction Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 60px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 24px;
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: #0066ff;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 12px 0 8px 0;
+            color: #1a1a1a;
+            letter-spacing: -1px;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .card-change {
+            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .positive {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        .negative {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        .neutral {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .signal-card {
+            grid-column: 1 / -1;
+        }
+
+        .signal-content {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .signal-badge {
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s ease;
+        }
+
+        .signal-badge:hover {
+            transform: scale(1.02);
+        }
+
+        .signal-BUY {
+            background: #0066ff;
+            color: white;
+        }
+
+        .signal-SELL {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .signal-HOLD {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            border: 2px solid #e5e5e5;
+        }
+
+        .signal-info {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .signal-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1a1a1a;
+            font-size: 0.9rem;
+        }
+
+        .signal-reasoning {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .control-panel {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s ease;
+        }
+
+        .control-panel:hover {
+            border-color: #0066ff;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #999;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #0066ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052cc;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            border: 1px solid #e5e5e5;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e5e5;
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
+        }
+
+        .status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .status-loading {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .status-success {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        .status-error {
+            background: #ff4444;
+            color: white;
+            border: 1px solid #cc0000;
+        }
+
+        .status-error small {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .model-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .metric {
+            text-align: left;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: #999;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #999;
+            margin-top: 40px;
+            font-size: 0.85rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e5e5;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 24px 16px;
+            }
+
+            header {
+                margin-bottom: 40px;
+            }
+
+            header h1 {
+                font-size: 1.6rem;
+            }
+
+            .card-value {
+                font-size: 2rem;
+            }
+
+            .signal-badge {
+                padding: 12px 24px;
+                font-size: 1rem;
+            }
+
+            .dashboard {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Crypto AI Price Prediction</h1>
+            <p>Real-time Bitcoin price prediction powered by machine learning</p>
+        </header>
+
+        <div class="control-panel">
+            <h3>Control Panel</h3>
+            <div class="controls">
+                <button class="btn-primary" onclick="fetchPrediction()">
+                    <span id="btnText">Refresh Data</span>
+                </button>
+                <button class="btn-secondary" onclick="autoRefresh()">
+                    <span id="autoRefreshText">Auto Refresh: OFF</span>
+                </button>
+                <span id="status" class="status status-loading">Ready</span>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Current Price</div>
+                </div>
+                <div class="card-value" id="currentPrice">—</div>
+                <div class="card-subtitle" id="currentChange">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">AI Prediction</div>
+                </div>
+                <div class="card-value" id="predictedPrice">—</div>
+                <div class="card-change neutral" id="predictedChange">—</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Model Confidence</div>
+                </div>
+                <div class="card-value" id="confidence" style="font-size: 1.8rem; text-transform: uppercase;">—</div>
+                <div class="card-subtitle" id="confidenceDesc">Waiting for data</div>
+            </div>
+
+            <div class="card signal-card">
+                <div class="card-header">
+                    <div class="card-title">Trading Signal</div>
+                </div>
+                <div class="signal-content">
+                    <div class="signal-badge signal-HOLD" id="signalBadge">HOLD</div>
+                    <div class="signal-info">
+                        <div class="signal-label">
+                            Confidence: <span id="signalConfidence">—</span>
+                        </div>
+                        <div class="signal-reasoning" id="signalReasoning">
+                            Waiting for prediction data
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card signal-card">
+                <div class="card-header">
+                    <div class="card-title">Model Performance</div>
+                </div>
+                <div class="model-metrics">
+                    <div class="metric">
+                        <div class="metric-label">R² Score</div>
+                        <div class="metric-value" id="r2Score">—</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">RMSE</div>
+                        <div class="metric-value" id="rmse">—</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">MSE</div>
+                        <div class="metric-value" id="mse">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timestamp" id="timestamp">Last updated: Never</div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        let isAutoRefresh = false;
+
+        // Test server connection
+        async function testConnection() {
+            try {
+                const response = await fetch('http://localhost:3000/health', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Show connection status
+        async function checkServerStatus() {
+            const statusEl = document.getElementById('status');
+            const isConnected = await testConnection();
+            
+            if (!isConnected) {
+                statusEl.textContent = 'Server offline';
+                statusEl.className = 'status status-error';
+                console.warn('⚠️ Server is not running. Please start the server with: node index.js');
+                return false;
+            }
+            return true;
+        }
+
+        async function fetchPrediction() {
+            const statusEl = document.getElementById('status');
+            const btnText = document.getElementById('btnText');
+            
+            try {
+                statusEl.textContent = 'Loading...';
+                statusEl.className = 'status status-loading';
+                btnText.innerHTML = '<span class="loading-spinner"></span>';
+
+                // Add timeout and better error handling
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+                const response = await fetch('http://localhost:3000/predict_price', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`Server error (${response.status}): ${errorData.message || response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid response format from server');
+                }
+                
+                updateDashboard(data);
+                
+                statusEl.textContent = 'Updated';
+                statusEl.className = 'status status-success';
+                btnText.textContent = 'Refresh Data';
+
+            } catch (error) {
+                console.error('Error fetching prediction:', error);
+                
+                let errorMessage = 'Connection failed';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timeout';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Server unavailable';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                statusEl.textContent = errorMessage;
+                statusEl.className = 'status status-error';
+                btnText.textContent = 'Retry';
+                
+                // Show detailed error in console for debugging
+                console.error('Detailed error info:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        function updateDashboard(data) {
+            try {
+                // Current Price
+                if (data.current_price && typeof data.current_price.value === 'number') {
+                    document.getElementById('currentPrice').textContent = 
+                        `$${data.current_price.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    document.getElementById('currentChange').textContent = data.current_price.currency || 'USD';
+                }
+                
+                // Predicted Price
+                if (data.predicted_price && typeof data.predicted_price.value === 'number') {
+                    document.getElementById('predictedPrice').textContent = 
+                        `$${data.predicted_price.value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+                
+                // Prediction Change
+                if (data.prediction_change !== undefined && data.prediction_change !== null) {
+                    const changePercent = parseFloat(data.prediction_change);
+                    const changeEl = document.getElementById('predictedChange');
+                    if (!isNaN(changePercent)) {
+                        changeEl.textContent = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                        changeEl.className = 'card-change ' + (changePercent > 0 ? 'positive' : changePercent < 0 ? 'negative' : 'neutral');
+                    }
+                }
+                
+                // Confidence
+                if (data.confidence) {
+                    document.getElementById('confidence').textContent = data.confidence;
+                    document.getElementById('confidenceDesc').textContent = 'Model confidence level';
+                }
+                
+                // Trading Signal
+                if (data.trading_signal) {
+                    const signalBadge = document.getElementById('signalBadge');
+                    const signal = data.trading_signal.signal || 'HOLD';
+                    signalBadge.textContent = signal;
+                    signalBadge.className = `signal-badge signal-${signal.toLowerCase()}`;
+                    
+                    document.getElementById('signalConfidence').textContent = data.trading_signal.confidence || '—';
+                    document.getElementById('signalReasoning').textContent = data.trading_signal.reasoning || 'No reasoning available';
+                }
+                
+                // Model Metrics
+                if (data.model_performance) {
+                    const metrics = data.model_performance;
+                    document.getElementById('r2Score').textContent = 
+                        typeof metrics.r2_score === 'number' ? metrics.r2_score.toFixed(4) : '—';
+                    document.getElementById('rmse').textContent = 
+                        typeof metrics.rmse === 'number' ? `$${metrics.rmse.toFixed(2)}` : '—';
+                    document.getElementById('mse').textContent = 
+                        typeof metrics.mse === 'number' ? metrics.mse.toFixed(0) : '—';
+                }
+                
+                // Timestamp
+                if (data.timestamp) {
+                    try {
+                        const timestamp = new Date(data.timestamp);
+                        if (!isNaN(timestamp.getTime())) {
+                            document.getElementById('timestamp').textContent = 
+                                `Last updated: ${timestamp.toLocaleString()}`;
+                        }
+                    } catch (e) {
+                        document.getElementById('timestamp').textContent = 'Last updated: Just now';
+                    }
+                } else {
+                    document.getElementById('timestamp').textContent = 'Last updated: Just now';
+                }
+                
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+                // Don't throw the error, just log it to prevent breaking the app
+            }
+        }
+
+        function autoRefresh() {
+            isAutoRefresh = !isAutoRefresh;
+            const btnText = document.getElementById('autoRefreshText');
+            
+            if (isAutoRefresh) {
+                btnText.textContent = 'Auto Refresh: ON';
+                fetchPrediction();
+                autoRefreshInterval = setInterval(fetchPrediction, 60000);
+            } else {
+                btnText.textContent = 'Auto Refresh: OFF';
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+        }
+
+        // Initial load
+        window.addEventListener('load', async () => {
+            console.log('🚀 Crypto AI Dashboard loaded');
+            
+            // Check server status first
+            const isServerOnline = await checkServerStatus();
+            
+            if (isServerOnline) {
+                console.log('✅ Server is online, fetching initial data...');
+                setTimeout(fetchPrediction, 500);
+            } else {
+                console.error('❌ Server is offline. Please start the server first.');
+                document.getElementById('status').innerHTML = 
+                    'Server offline<br><small>Run: node index.js</small>';
+            }
+        });
+    </script>
+</body>
+</html>
